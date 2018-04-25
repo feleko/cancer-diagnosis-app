@@ -1,34 +1,33 @@
 # Load libraries
 import pandas
-from pandas.plotting import scatter_matrix
+
 import matplotlib.pyplot as plt
 import os
 import csv
 import sys
 
 
-def test_libraries():
-    # Python version
+def print_libraries_version():
     import sys
     print('Python: {}'.format(sys.version))
-    # scipy
+
     import scipy
     print('scipy: {}'.format(scipy.__version__))
-    # numpy
+
     import numpy
     print('numpy: {}'.format(numpy.__version__))
-    # matplotlib
+
     import matplotlib
     print('matplotlib: {}'.format(matplotlib.__version__))
-    # pandas
+
     import pandas
     print('pandas: {}'.format(pandas.__version__))
-    # scikit-learn
+
     import sklearn
     print('sklearn: {}'.format(sklearn.__version__))
 
 
-def cvs_reader(path):
+def csv_reader(path):
     reader = csv.reader(open(path), delimiter=' ', quotechar='|')
     list_csv = list(reader)
     list_csv.pop(0)
@@ -44,14 +43,20 @@ def create_chart(dataset, path):
 
     # histograms
     dataset.hist()
+
     # plt.show()
     plt.savefig('%s/histograms.png' % path)
     plt.close()
 
     # scatter plot matrix
-    scatter_matrix(dataset)
+    pandas.scatter_matrix(dataset)
     # plt.show()
     plt.savefig('%s/scatter_matrix.png' % path)
+    plt.close()
+
+    # scatter
+    dataset.plot.scatter(x='Centroid1', y='Centroid2', c='Area', s=50)
+    plt.savefig('%s/scatter.png' % path)
     plt.close()
 
 
@@ -62,16 +67,22 @@ def statistical_data(dataset, fout=sys.stdout):
         to_write.append((name, getattr(dataset, name)()))
         to_write.append(('descriptions', dataset.describe()))
     s = '\n'.join(["%s: %s " % (str(i[0]), repr(i[1])) for i in to_write])
-    # s.write(fout)
     fout.write(s)
 
 
-def main():
-    test_libraries()
-    path = 'csv'
+def check_directory_existence(directory):
+    if os.path.exists(directory):
+        print("`%s` directory exists" % directory)
+        return True
+    else:
+        print("`%s` directory not found" % directory)
+        return False
+
+
+def run_analysis(path):
     for top, dnames, fnames in os.walk(path):
         for fname in fnames:
-            table = cvs_reader(os.path.join(top, fname))
+            table = csv_reader(os.path.join(top, fname))
             if len(table) > 0:
                 print(os.path.join(top, fname))
                 dataset = pandas.read_csv(os.path.join(top, fname), header=0, sep=';')
@@ -92,4 +103,17 @@ def main():
                 print("The file is empty: " + fname)
 
 
+def main():
+    print_libraries_version()
+    path = './csv'
+    scores_path = './scores'
+
+    if check_directory_existence(path):
+        if not check_directory_existence(scores_path):
+            os.makedirs(scores_path)
+
+        run_analysis(path)
+
+
 main()
+
