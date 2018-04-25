@@ -5,6 +5,7 @@ import matplotlib.pyplot as plt
 import os
 import csv
 import sys
+import argparse
 
 
 def print_libraries_version():
@@ -103,16 +104,25 @@ def run_analysis(path):
                 print("The file is empty: " + fname)
 
 
+def read_arguments():
+    parser = argparse.ArgumentParser(description="Analysis of cancerous cells")
+    parser.add_argument('csv_path', default='./csv', help='Path to the directory with *.csv files', nargs='?')
+    parser.add_argument('scores_path', default='./scores', help='Path to scores directory', nargs='?')
+    args = parser.parse_args()
+    return args
+
+
 def main():
     print_libraries_version()
-    path = './csv'
-    scores_path = './scores'
+    args = read_arguments()
 
-    if check_directory_existence(path):
-        if not check_directory_existence(scores_path):
-            os.makedirs(scores_path)
+    print "Environment: \n * CSV directory path: %s\n * Scores directory path: %s\n" \
+          % (args.csv_path, args.scores_path)
 
-        run_analysis(path)
+    if check_directory_existence(args.csv_path):
+        if not check_directory_existence(args.scores_path):
+            os.makedirs(args.scores_path)
+        run_analysis(args.csv_path)
 
 
 main()
